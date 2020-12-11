@@ -1,0 +1,26 @@
+{
+  "name": "openrct2-discord-bridge",
+  "version": "1.0.0",
+  "description": "OpenRCT2 to Discord communication",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CorySanin/openrct2-discord-bridge.git"
+  },
+  "dependencies": {
+    "discord.js": "12.5.1",
+    "json5": "2.1.3"
+  },
+  "keywords": [
+    "openrct2",
+    "plugin",
+    "discord",
+    "bot"
+  ],
+  "author": "Cory Sanin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CorySanin/openrct2-discord-bridge/issues"
+  },
+  "homepage": "https://github.com/CorySanin/openrct2-discord-bridge#readme"
+}

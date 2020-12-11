@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "lib": ["es5"],
+        "target": "ES5",
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "removeComments": true,
+        "outDir": "lib"
+    },
+    "files": ["src/discord-bridge.ts"]
+}
