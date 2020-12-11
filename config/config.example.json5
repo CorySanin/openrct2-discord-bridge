@@ -1,0 +1,6 @@
+{
+    "port": 35711,
+    "botToken": "DiscordBotToken",
+    "guild": "DiscordGuildID",
+    "channel": "DiscordChannelID"
+}
