@@ -14,6 +14,10 @@ if (typeof (registerPlugin) === "undefined") {
             let config = JSON5.parse(data);
             let connections = {};
 
+            if (!('port' in config)) {
+                config.port = 35711;
+            }
+
             async function sendChatToDiscord(msg) {
                 (await client.guilds.fetch(config.guild)).channels.resolve(config.channel).send(msg, {
                     disableMentions: 'all'
@@ -27,7 +31,7 @@ if (typeof (registerPlugin) === "undefined") {
                 socket.on('data', (data) => {
                     let msg = JSON5.parse(data);
                     if (msg.type === 'id') {
-                        servername = msg.body.replace('(','').replace(')', '');
+                        servername = msg.body.replace('(', '').replace(')', '');
                         connections[servername] = socket;
                     }
                     else if (msg.type === 'chat') {
@@ -57,26 +61,28 @@ if (typeof (registerPlugin) === "undefined") {
                     });
                     if (msg.reference || msg.content.startsWith('(')) {
                         let server = null;
-                        if(msg.reference){
+                        if (msg.reference) {
                             let repliedTo = await msg.channel.messages.fetch(msg.reference.messageID);
                             repliedTo = /\*\(([^()]+)\)\*\n/g.exec(repliedTo.content);
-                            if(repliedTo && repliedTo.length > 1){
+                            if (repliedTo && repliedTo.length > 1) {
                                 server = repliedTo[1];
                             }
                         }
-                        else{
+                        else {
                             let repliedTo = /\(([^()]+)\)/g.exec(msg.content);
-                            if(repliedTo && repliedTo.length > 1){
+                            if (repliedTo && repliedTo.length > 1) {
                                 server = repliedTo[1];
                             }
                         }
-                        if(server && server in connections){
+                        if (server && server in connections) {
                             connections[server].write(message);
                         }
                     }
                     else {
                         for (conid in connections) {
-                            connections[conid].write(message);
+                            if (Number.parseInt(conid) == conid) {
+                                connections[conid].write(message);
+                            }
                         }
                     }
                 }
@@ -84,7 +90,7 @@ if (typeof (registerPlugin) === "undefined") {
 
             client.login(config.botToken);
 
-            server.listen(config.port, () => {
+            server.listen(config.port, '0.0.0.0', () => {
                 console.log(`Discord Bridge server listening on ${config.port}`);
             });
         }
