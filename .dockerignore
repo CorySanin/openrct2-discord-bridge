@@ -1,2 +1,6 @@
 npm-debug.log
 config.json5
+node_modules
+docker-compose.yml
+lib
+src
