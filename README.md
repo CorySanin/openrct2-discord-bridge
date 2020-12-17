@@ -4,4 +4,4 @@ A plugin and Node app for OpenRCT2. Sends in-game chat to Discord and vice versa
 
 ## Setup
 
-Modify config.json5 with the appropriate parameters and start the server/bot with `node index.js`. Make sure the plugin is installed and start up an OpenRCT2 multiplayer server.
+Modify config.json5 with the appropriate parameters and start the server/bot with `node index.js`. Make sure the plugin (`lib/discord-bridge.js`) is installed and start up an OpenRCT2 multiplayer server.
