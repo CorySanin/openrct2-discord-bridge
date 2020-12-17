@@ -9,8 +9,8 @@ services:
       volumes:
          - ./lib:/home/openrct2/.config/OpenRCT2/plugin/bridge
          - ./config/openrct2/plugin.store.json:/home/openrct2/.config/OpenRCT2/plugin.store.json
-      # depends_on:
-      #    - discord-bridge
+      depends_on:
+         - discord-bridge
       command:
          - "host"
          - "https://taunt.bot/rct/scenarios/"
