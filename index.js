@@ -88,6 +88,10 @@ if (typeof (registerPlugin) === "undefined") {
                 }
             });
 
+            client.on('ready', () => {
+                console.log(`Bot logged in as ${client.user.username}`);
+            });
+
             client.login(config.botToken);
 
             server.listen(config.port, '0.0.0.0', () => {

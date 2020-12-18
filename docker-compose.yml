@@ -9,6 +9,7 @@ services:
       volumes:
          - ./lib:/home/openrct2/.config/OpenRCT2/plugin/bridge
          - ./config/openrct2/plugin.store.json:/home/openrct2/.config/OpenRCT2/plugin.store.json
+         - ./config/openrct2/config.ini:/home/openrct2/.config/OpenRCT2/config.ini
       depends_on:
          - discord-bridge
       command:

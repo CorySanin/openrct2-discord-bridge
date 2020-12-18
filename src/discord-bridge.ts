@@ -46,7 +46,7 @@ function main() {
 
         if (network.mode === 'server') {
             context.subscribe('network.chat', (e) => {
-                if (e.message.toLowerCase() != '!cash' && e.player !== 0) {
+                if (!e.message.startsWith('!') && e.player !== 0) {
                     socket.write(JSON.stringify({
                         type: 'chat',
                         body: {
