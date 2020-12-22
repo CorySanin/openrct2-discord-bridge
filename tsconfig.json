@@ -4,6 +4,7 @@
         "target": "ES5",
         "module": "CommonJS",
         "moduleResolution": "Node",
+        "typeRoots": ["types"],
         "removeComments": true,
         "outDir": "lib"
     },

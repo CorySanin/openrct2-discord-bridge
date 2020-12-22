@@ -29,22 +29,30 @@ if (typeof (registerPlugin) === "undefined") {
                 connections[id] = socket;
                 let servername = 'unknown server';
                 socket.on('data', (data) => {
-                    let msg = JSON5.parse(data);
-                    if (msg.type === 'id') {
-                        servername = msg.body.replace('(', '').replace(')', '');
-                        connections[servername] = socket;
+                    try {
+                        let msg = JSON5.parse(data);
+                        if (msg.type === 'id') {
+                            servername = msg.body.replace('(', '').replace(')', '');
+                            connections[servername] = socket;
+                        }
+                        else if (msg.type === 'chat') {
+                            sendChatToDiscord(`**${msg.body.author}** *(${servername})*\n${msg.body.content}`);
+                        }
+                        else if (msg.type === 'message') {
+                            sendChatToDiscord(`*(${servername})*\n${msg.body}`);
+                        }
                     }
-                    else if (msg.type === 'chat') {
-                        sendChatToDiscord(`**${msg.body.author}** *(${servername})*\n${msg.body.content}`);
-                    }
-                    else if (msg.type === 'message') {
-                        sendChatToDiscord(`*(${servername})*\n${msg.body}`);
+                    catch(ex){
+                        console.log(`Error parsing json: ${ex}\nInput json: ${data.toString()}`);
                     }
                 });
                 socket.on('close', had_error => {
                     delete connections[id];
                     delete connections[server];
-                })
+                });
+                socket.write(JSON.stringify({
+                    type: "handshake"
+                }));
             });
             server.on('error', (err) => {
                 console.log(err);

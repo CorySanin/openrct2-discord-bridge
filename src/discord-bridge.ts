@@ -1,4 +1,4 @@
-/// <reference path="../../../bin/openrct2.d.ts" />
+/// <reference path="../types/openrct2.d.ts" />
 
 const MINRATING = 400;
 
@@ -12,28 +12,34 @@ function main() {
         let status = {
             parkRating: false
         }
+        let reconnect = false;
         let connect = () => {
             console.log(`Attempting to connect to ${host}:${port}`);
-            socket.connect(port, host, () => {
+            socket.connect(port, host, doNothing);
+        };
+        socket.on('close', (hadError) => reconnect = true);
+        socket.on('error', (hadError) => reconnect = true);
+        socket.on('data', (data) => {
+            let msg = JSON.parse(data);
+            if(msg.type === 'handshake'){
+                reconnect = false;
                 if (name) {
                     socket.write(JSON.stringify({
                         type: 'id',
                         body: name
                     }));
                 }
-            });
-        };
-        socket.on('close', (hadError) => {
-            connect();
-        });
-        socket.on('data', (data) => {
-            let msg = JSON.parse(data);
-            if(msg.type === 'chat'){
+            }
+            else if(msg.type === 'chat'){
                 network.sendMessage(`${msg.body.author}: ${msg.body.content}`);
             }
         });
 
         context.subscribe('interval.day', () => {
+            if(reconnect){
+                connect();
+            }
+
             let ratingCheck = park.rating > MINRATING;
             if(status.parkRating && !ratingCheck){
                 socket.write(JSON.stringify({
@@ -46,7 +52,7 @@ function main() {
 
         if (network.mode === 'server') {
             context.subscribe('network.chat', (e) => {
-                if (!e.message.startsWith('!') && e.player !== 0) {
+                if (e.message.substring(0,1) !== '!' && e.player !== 0) {
                     socket.write(JSON.stringify({
                         type: 'chat',
                         body: {
@@ -76,7 +82,6 @@ function getPlayer(playerID: number): Player {
     return player;
 }
 
-// @ts-ignore
 function doNothing() {
     //Done!
 }
