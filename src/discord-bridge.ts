@@ -1,6 +1,7 @@
 /// <reference path="../types/openrct2.d.ts" />
 
 const MINRATING = 400;
+const NEWLINE = new RegExp('\n', 'g');
 
 function main() {
     let onlineOnly = context.sharedStorage.get('discord-bridge.onlineonly', true);
@@ -31,7 +32,7 @@ function main() {
                 }
             }
             else if(msg.type === 'chat'){
-                network.sendMessage(`${msg.body.author}: ${msg.body.content}`);
+                network.sendMessage(`{PALELAVENDER}${msg.body.author}: {WHITE}${msg.body.content.replace(NEWLINE, '{NEWLINE}')}`);
             }
         });
 
