@@ -2,6 +2,7 @@
 
 const MINRATING = 400;
 const NEWLINE = new RegExp('\n', 'g');
+const PREFIX = new RegExp('^(!|/)');
 
 function main() {
     let onlineOnly = context.sharedStorage.get('discord-bridge.onlineonly', true);
@@ -22,7 +23,7 @@ function main() {
         socket.on('error', (hadError) => reconnect = true);
         socket.on('data', (data) => {
             let msg = JSON.parse(data);
-            if(msg.type === 'handshake'){
+            if (msg.type === 'handshake') {
                 reconnect = false;
                 if (name) {
                     socket.write(JSON.stringify({
@@ -31,18 +32,18 @@ function main() {
                     }));
                 }
             }
-            else if(msg.type === 'chat'){
+            else if (msg.type === 'chat') {
                 network.sendMessage(`{PALELAVENDER}${msg.body.author}: {WHITE}${msg.body.content.replace(NEWLINE, '{NEWLINE}')}`);
             }
         });
 
         context.subscribe('interval.day', () => {
-            if(reconnect){
+            if (reconnect) {
                 connect();
             }
 
             let ratingCheck = park.rating > MINRATING;
-            if(status.parkRating && !ratingCheck){
+            if (status.parkRating && !ratingCheck) {
                 socket.write(JSON.stringify({
                     type: 'message',
                     body: `Park rating dropped below ${MINRATING}`
@@ -53,7 +54,7 @@ function main() {
 
         if (network.mode === 'server') {
             context.subscribe('network.chat', (e) => {
-                if (e.message.substring(0,1) !== '!' && e.player !== 0) {
+                if (!e.message.match(PREFIX) && e.player !== 0) {
                     socket.write(JSON.stringify({
                         type: 'chat',
                         body: {
