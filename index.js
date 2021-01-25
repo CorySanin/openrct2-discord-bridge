@@ -5,6 +5,10 @@ if (typeof (registerPlugin) === "undefined") {
     const Discord = require('discord.js');
     const server = new Server();
     const client = new Discord.Client();
+    const DISCORDDESTINATIONSTRING = /^\(([^()]+)\)/g;
+    const MESSAGEORIGINSTRING = /\*\(([^()]+)\)\*\n/g;
+    let BOTMENTION = new RegExp(`^<@!?-1>`);
+    let clients = 0;
 
     fs.readFile('config/config.json5', (err, data) => {
         if (err) {
@@ -13,6 +17,7 @@ if (typeof (registerPlugin) === "undefined") {
         else {
             let config = JSON5.parse(data);
             let connections = {};
+            let connectionsByName = {};
 
             if (!('port' in config)) {
                 config.port = 35711;
@@ -24,7 +29,17 @@ if (typeof (registerPlugin) === "undefined") {
                 });
             }
 
+            function sendChatToOtherServers(msg, originServer) {
+                let message = JSON.stringify(msg);
+                for (conid in connections) {
+                    if (conid !== originServer) {
+                        connections[conid].write(message);
+                    }
+                }
+            }
+
             server.on('connection', (socket) => {
+                clients++;
                 let id = Date.now();
                 connections[id] = socket;
                 let servername = 'unknown server';
@@ -33,22 +48,24 @@ if (typeof (registerPlugin) === "undefined") {
                         let msg = JSON5.parse(data);
                         if (msg.type === 'id') {
                             servername = msg.body.replace('(', '').replace(')', '');
-                            connections[servername] = socket;
+                            connectionsByName[servername] = socket;
                         }
                         else if (msg.type === 'chat') {
-                            sendChatToDiscord(`**${msg.body.author}** *(${servername})*\n${msg.body.content}`);
+                            msg.body.origin = servername;
+                            sendChatToDiscord(`**${msg.body.author}** *(${msg.body.origin})*\n${msg.body.content}`);
                         }
                         else if (msg.type === 'message') {
                             sendChatToDiscord(`*(${servername})*\n${msg.body}`);
                         }
                     }
-                    catch(ex){
+                    catch (ex) {
                         console.log(`Error parsing json: ${ex}\nInput json: ${data.toString()}`);
                     }
                 });
                 socket.on('close', had_error => {
+                    clients--;
                     delete connections[id];
-                    delete connections[server];
+                    delete connectionsByName[servername];
                 });
                 socket.write(JSON.stringify({
                     type: "handshake"
@@ -60,43 +77,48 @@ if (typeof (registerPlugin) === "undefined") {
 
             client.on('message', async msg => {
                 if (!msg.author.bot && msg.guild && msg.channel.id === config.channel) {
-                    let message = JSON.stringify({
+                    let message = {
                         type: 'chat',
                         body: {
                             author: msg.author.username,
                             content: msg.content
                         }
-                    });
+                    };
                     if (msg.reference || msg.content.startsWith('(')) {
                         let server = null;
                         if (msg.reference) {
-                            let repliedTo = await msg.channel.messages.fetch(msg.reference.messageID);
-                            repliedTo = /\*\(([^()]+)\)\*\n/g.exec(repliedTo.content);
+                            let repliedTo = msg;
+                            while (repliedTo.reference) {
+                                repliedTo = await msg.channel.messages.fetch(repliedTo.reference.messageID);
+                            }
+                            repliedTo = MESSAGEORIGINSTRING.exec(repliedTo.content);
                             if (repliedTo && repliedTo.length > 1) {
                                 server = repliedTo[1];
                             }
                         }
                         else {
-                            let repliedTo = /\(([^()]+)\)/g.exec(msg.content);
+                            let repliedTo = DISCORDDESTINATIONSTRING.exec(msg.content);
                             if (repliedTo && repliedTo.length > 1) {
                                 server = repliedTo[1];
+                                message.body.content = msg.content.replace(DISCORDDESTINATIONSTRING, '').trim();
                             }
                         }
-                        if (server && server in connections) {
-                            connections[server].write(message);
+                        if (server && server in connectionsByName) {
+                            connectionsByName[server].write(JSON.stringify(message));
                         }
                     }
-                    else {
+                    else if(clients === 1 || msg.content.match(BOTMENTION)){
+                        message.body.content = msg.content.replace(BOTMENTION, '').trim();
+                        message = JSON.stringify(message);
                         for (conid in connections) {
-                            if (Number.parseInt(conid) == conid) {
-                                connections[conid].write(message);
-                            }
+                            connections[conid].write(message);
                         }
                     }
                 }
             });
 
             client.on('ready', () => {
+                BOTMENTION = new RegExp(`^<@!?${client.user.id}>`);
                 console.log(`Bot logged in as ${client.user.username}`);
             });
 

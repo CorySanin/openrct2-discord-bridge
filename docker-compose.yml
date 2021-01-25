@@ -6,6 +6,7 @@ services:
       image: corysanin/openrct2-cli:develop
       ports:
          - 11753:11753
+         - 11754:11754/udp
       volumes:
          - ./lib:/home/openrct2/.config/OpenRCT2/plugin/bridge
          - ./config/openrct2/plugin.store.json:/home/openrct2/.config/OpenRCT2/plugin.store.json
