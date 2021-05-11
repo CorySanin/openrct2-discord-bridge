@@ -15,7 +15,7 @@ services:
          - discord-bridge
       command:
          - "host"
-         - "https://taunt.bot/rct/scenarios/"
+         - "https://ffa-tycoon.com/parks/sandbox"
    
    discord-bridge:
       container_name: openrct2-discord-bridge
