@@ -9,6 +9,7 @@ function main() {
     if (!onlineOnly || network.mode === 'server') {
         let socket = network.createSocket();
         let name = context.sharedStorage.get('discord-bridge.name', null);
+        let channel = context.sharedStorage.get('discord-bridge.channel', null);
         let port = context.sharedStorage.get('discord-bridge.port', 35711);
         let host = context.sharedStorage.get('discord-bridge.host', '127.0.0.1');
         let status = {
@@ -24,16 +25,25 @@ function main() {
         socket.on('data', (data) => {
             let msg = JSON.parse(data);
             if (msg.type === 'handshake') {
+                console.log('Connected.');
                 reconnect = false;
-                if (name) {
+                if (name || channel) {
+                    let body = {};
+                    if(name){
+                        body['name'] = name;
+                    }
+                    if(channel){
+                        body['channel'] = channel;
+                    }
+
                     socket.write(JSON.stringify({
-                        type: 'id',
-                        body: name
+                        type: 'handshake',
+                        body
                     }));
                 }
             }
             else if (msg.type === 'chat') {
-                network.sendMessage(`{PALELAVENDER}${('origin' in msg.body)? `(${msg.body.origin}) ` : ''}${msg.body.author}: {WHITE}${msg.body.content.replace(NEWLINE, '{NEWLINE}')}`);
+                network.sendMessage(`{PALELAVENDER}${('origin' in msg.body) ? `(${msg.body.origin}) ` : ''}${msg.body.author}: {WHITE}${msg.body.content.replace(NEWLINE, '{NEWLINE}')}`);
             }
         });
 
