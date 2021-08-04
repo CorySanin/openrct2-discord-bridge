@@ -74,6 +74,26 @@ function main() {
                     }));
                 }
             });
+
+				context.subscribe("network.join", (e) => {
+					if (e.player){
+						let playerName = network.getPlayer(e.player).name;
+						socket.write(JSON.stringify({
+                        type: 'message',
+                        body: `**${playerName} joined the server.**`
+                    }));
+					}
+				});
+
+				context.subscribe("network.join", (e) => {
+					if (e.player){
+						let playerName = network.getPlayer(e.player).name;
+						socket.write(JSON.stringify({
+                        type: 'message',
+                        body: `**${playerName} left the server.**`
+                    }));
+					}
+				});
         }
 
         connect();
