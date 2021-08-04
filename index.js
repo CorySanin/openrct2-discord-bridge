@@ -64,6 +64,9 @@ if (typeof (registerPlugin) === "undefined") {
                         else if (msg.type === 'message') {
                             sendChatToDiscord(`*(${servername})*\n${msg.body}`, conobj.channel);
                         }
+                        else if (config.connectionMessages && msg.type === 'connect') {
+                            sendChatToDiscord(`*(${servername})*\n${msg.body.player} has ${msg.body.type == 'leave' ? 'left' : 'joined'}.`, conobj.channel);
+                        }
                     }
                     catch (ex) {
                         console.log(`Error parsing json: ${ex}\nInput json: ${data.toString()}`);

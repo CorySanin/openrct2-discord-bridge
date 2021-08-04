@@ -20,6 +20,16 @@ function main() {
             console.log(`Attempting to connect to ${host}:${port}`);
             socket.connect(port, host, doNothing);
         };
+        let leavejoin = (type, player) => {
+            socket.write(JSON.stringify({
+                type: 'connect',
+                body: {
+                    player: getPlayer(player).name,
+                    type
+                }
+            }));
+        };
+
         socket.on('close', (hadError) => reconnect = true);
         socket.on('error', (hadError) => reconnect = true);
         socket.on('data', (data) => {
@@ -29,10 +39,10 @@ function main() {
                 reconnect = false;
                 if (name || channel) {
                     let body = {};
-                    if(name){
+                    if (name) {
                         body['name'] = name;
                     }
-                    if(channel){
+                    if (channel) {
                         body['channel'] = channel;
                     }
 
@@ -60,7 +70,15 @@ function main() {
                 }));
             }
             status.parkRating = ratingCheck;
-        })
+        });
+
+        context.subscribe('network.join', (e) => {
+            leavejoin('join', e.player);
+        });
+
+        context.subscribe('network.leave', (e) => {
+            leavejoin('leave', e.player);
+        });
 
         if (network.mode === 'server') {
             context.subscribe('network.chat', (e) => {
