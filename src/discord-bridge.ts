@@ -85,7 +85,7 @@ function main() {
 					}
 				});
 
-				context.subscribe("network.join", (e) => {
+				context.subscribe("network.leave", (e) => {
 					if (e.player){
 						let playerName = network.getPlayer(e.player).name;
 						socket.write(JSON.stringify({
