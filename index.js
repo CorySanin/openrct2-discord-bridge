@@ -4,7 +4,9 @@ if (typeof (registerPlugin) === "undefined") {
     const Server = require('net').Server;
     const Discord = require('discord.js');
     const server = new Server();
-    const client = new Discord.Client();
+    const client = new Discord.Client({
+        intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES]
+    });
     let clients = 0;
 
     fs.readFile('config/config.json5', (err, data) => {
@@ -45,10 +47,7 @@ if (typeof (registerPlugin) === "undefined") {
                 socket.on('data', (data) => {
                     try {
                         let msg = JSON5.parse(data);
-                        if (msg.type === 'id') { //deprecated
-                            servername = msg.body.replace('(', '').replace(')', '');
-                        }
-                        else if (msg.type === 'handshake') {
+                        if (msg.type === 'handshake') {
                             if('name' in msg.body){
                                 servername = msg.body.name.replace('(', '').replace(')', '');
                             }
@@ -84,7 +83,7 @@ if (typeof (registerPlugin) === "undefined") {
                 console.log(err);
             });
 
-            client.on('message', async msg => {
+            client.on('messageCreate', async msg => {
                 if (!msg.author.bot && msg.guild) {
                     let message = {
                         type: 'chat',
