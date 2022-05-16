@@ -24,6 +24,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Provide default tag username
+      if: ${{ env.DOCKER_USERNAME == '' }}
+      run: |
+          echo "DOCKER_USERNAME=remote" >> $GITHUB_ENV
+
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag "$DOCKER_USERNAME/$REPOSITORY:latest"
 
@@ -54,6 +59,7 @@ jobs:
 
     - name: Push to GitHub
       uses: docker/build-push-action@v2
+      if: github.event_name == 'push'
       with:
         context: .
         push: true

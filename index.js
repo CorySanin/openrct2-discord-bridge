@@ -21,8 +21,8 @@ if (typeof (registerPlugin) === "undefined") {
                 config.port = 35711;
             }
 
-            async function sendChatToDiscord(msg, channel = config.channel) {
-                (await client.guilds.fetch(config.guild)).channels.resolve(channel).send(msg, {
+            async function sendChatToDiscord(msg, options = {}) {
+                (await client.guilds.fetch(options.guild || config.guild)).channels.resolve(options.channel || config.channel).send(msg, {
                     disableMentions: 'all'
                 });
             }
@@ -42,36 +42,38 @@ if (typeof (registerPlugin) === "undefined") {
                 let servername = 'unknown server';
                 let conobj = connections[id] = {
                     socket,
-                    channel: config.channel
+                    channel: config.channel,
+                    guild: config.guild,
+                    connectionMessages: config.connectionMessages
                 };
                 socket.on('data', (data) => {
                     try {
                         let msg = JSON5.parse(data);
                         if (msg.type === 'handshake') {
-                            if('name' in msg.body){
+                            if ('name' in msg.body) {
                                 servername = msg.body.name.replace('(', '').replace(')', '');
                             }
-                            if('channel' in msg.body){
-                                conobj.channel = msg.body.channel;
-                            }
+                            conobj.channel = msg.body.channel || config.channel;
+                            conobj.guild = msg.body.guild || config.guild;
+                            conobj.connectionMessages = msg.body.connectionMessages || config.connectionMessages;
                         }
                         else if (msg.type === 'chat') {
                             msg.body.origin = servername;
-                            sendChatToDiscord(`**${msg.body.author}** *(${msg.body.origin})*\n${msg.body.content}`, conobj.channel);
+                            sendChatToDiscord(`**${msg.body.author}** *(${msg.body.origin})*\n${msg.body.content}`, conobj);
                             sendChatToOtherServers(msg, conobj);
                         }
                         else if (msg.type === 'message') {
-                            sendChatToDiscord(`*(${servername})*\n${msg.body}`, conobj.channel);
+                            sendChatToDiscord(`*(${servername})*\n${msg.body}`, conobj);
                         }
-                        else if (config.connectionMessages && msg.type === 'connect') {
-                            sendChatToDiscord(`*(${servername})*\n${msg.body.player} has ${msg.body.type == 'leave' ? 'left' : 'joined'}.`, conobj.channel);
+                        else if (conobj.connectionMessages && msg.type === 'connect') {
+                            sendChatToDiscord(`*(${servername})*\n${msg.body.player} has ${msg.body.type == 'leave' ? 'left' : 'joined'}.`, conobj);
                         }
                     }
                     catch (ex) {
                         console.log(`Error parsing json: ${ex}\nInput json: ${data.toString()}`);
                     }
                 });
-                socket.on('close', had_error => {
+                socket.on('close', _ => {
                     clients--;
                     delete connections[id];
                 });

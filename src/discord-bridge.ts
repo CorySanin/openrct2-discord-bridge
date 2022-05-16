@@ -9,9 +9,12 @@ function main() {
     if (!onlineOnly || network.mode === 'server') {
         let socket = network.createSocket();
         let name = context.sharedStorage.get('discord-bridge.name', null);
+        let guild = context.sharedStorage.get('discord-bridge.guild', null);
         let channel = context.sharedStorage.get('discord-bridge.channel', null);
         let port = context.sharedStorage.get('discord-bridge.port', 35711);
         let host = context.sharedStorage.get('discord-bridge.host', '127.0.0.1');
+        let connectionMessages = context.sharedStorage.get('discord-bridge.connectionMessages', false);
+        let showChatCommands = context.sharedStorage.get('discord-bridge.showChatCommands', false);
         let status = {
             parkRating: false
         }
@@ -30,20 +33,26 @@ function main() {
             }));
         };
 
-        socket.on('close', (hadError) => reconnect = true);
-        socket.on('error', (hadError) => reconnect = true);
+        socket.on('close', _ => reconnect = true);
+        socket.on('error', _ => reconnect = true);
         socket.on('data', (data) => {
             let msg = JSON.parse(data);
             if (msg.type === 'handshake') {
                 console.log('Connected.');
                 reconnect = false;
-                if (name || channel) {
+                if (name || guild || channel || connectionMessages) {
                     let body = {};
                     if (name) {
                         body['name'] = name;
                     }
+                    if (guild) {
+                        body['guild'] = guild;
+                    }
                     if (channel) {
                         body['channel'] = channel;
+                    }
+                    if (connectionMessages) {
+                        body['connectionMessages'] = connectionMessages;
                     }
 
                     socket.write(JSON.stringify({
@@ -82,7 +91,7 @@ function main() {
 
         if (network.mode === 'server') {
             context.subscribe('network.chat', (e) => {
-                if (!e.message.match(PREFIX) && e.player !== 0) {
+                if ((showChatCommands || !e.message.match(PREFIX)) && e.player !== 0) {
                     socket.write(JSON.stringify({
                         type: 'chat',
                         body: {
@@ -118,7 +127,7 @@ function doNothing() {
 
 registerPlugin({
     name: 'discord-bridge',
-    version: '1.0.0',
+    version: '2.1.0',
     authors: ['Cory Sanin'],
     type: 'remote',
     licence: 'MIT',

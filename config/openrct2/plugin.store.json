@@ -1,1 +1,11 @@
-{"discord-bridge":{"host":"discord-bridge", "name": "Local Server"}}
+{
+    "discord-bridge": {
+        "host": "openrct2-discord-bridge",
+        "port": 35711,
+        "name": "Local Server",
+        "guild": "optional, override the discord guild for this server",
+        "channel": "optional, override the discord channel for this server",
+        "connectionMessages": false,
+        "showChatCommands": false
+    }
+}

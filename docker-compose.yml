@@ -3,7 +3,7 @@ version: '2'
 services:
    openrct2:
       container_name: openrct2-cli
-      image: corysanin/openrct2-cli:develop
+      image: corysanin/openrct2-cli:latest-alpine
       ports:
          - 11753:11753
          - 11754:11754/udp
@@ -15,9 +15,9 @@ services:
          - discord-bridge
       command:
          - "host"
-         - "https://ffa-tycoon.com/parks/sandbox"
+         - "https://bit.do/openrct2-bpb"
    
-   discord-bridge:
+   openrct2-discord-bridge:
       container_name: openrct2-discord-bridge
       build:
          context: ./
