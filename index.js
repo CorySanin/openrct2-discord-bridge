@@ -5,7 +5,7 @@ if (typeof (registerPlugin) === "undefined") {
     const Discord = require('discord.js');
     const server = new Server();
     const client = new Discord.Client({
-        intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES]
+        intents: [Discord.IntentsBitField.Flags.Guilds, Discord.IntentsBitField.Flags.MessageContent, Discord.IntentsBitField.Flags.GuildMessages]
     });
     let clients = 0;
 
@@ -17,9 +17,7 @@ if (typeof (registerPlugin) === "undefined") {
             let config = JSON5.parse(data);
             let connections = {};
 
-            if (!('port' in config)) {
-                config.port = 35711;
-            }
+            config.port = config.port || 35711;
 
             async function sendChatToDiscord(msg, options = {}) {
                 (await client.guilds.fetch(options.guild || config.guild)).channels.resolve(options.channel || config.channel).send(msg, {
@@ -59,14 +57,14 @@ if (typeof (registerPlugin) === "undefined") {
                         }
                         else if (msg.type === 'chat') {
                             msg.body.origin = servername;
-                            sendChatToDiscord(`**${msg.body.author}** *(${msg.body.origin})*\n${msg.body.content}`, conobj);
+                            sendChatToDiscord(`**${Discord.escapeMarkdown(msg.body.author)}** *(${msg.body.origin})*\n${msg.body.content}`, conobj);
                             sendChatToOtherServers(msg, conobj);
                         }
                         else if (msg.type === 'message') {
                             sendChatToDiscord(`*(${servername})*\n${msg.body}`, conobj);
                         }
                         else if (conobj.connectionMessages && msg.type === 'connect') {
-                            sendChatToDiscord(`*(${servername})*\n${msg.body.player} has ${msg.body.type == 'leave' ? 'left' : 'joined'}.`, conobj);
+                            sendChatToDiscord(`*(${servername})*\n${Discord.escapeMarkdown(msg.body.player)} has ${msg.body.type == 'leave' ? 'left' : 'joined'}.`, conobj);
                         }
                     }
                     catch (ex) {
@@ -110,6 +108,11 @@ if (typeof (registerPlugin) === "undefined") {
 
             server.listen(config.port, '0.0.0.0', () => {
                 console.log(`Discord Bridge server listening on ${config.port}`);
+            });
+
+            process.on('SIGTERM', () => {
+                client.destroy();
+                server.close();
             });
         }
     });

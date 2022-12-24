@@ -12,11 +12,11 @@
     "url": "git+https://github.com/CorySanin/openrct2-discord-bridge.git"
   },
   "dependencies": {
-    "bufferutil": "4.0.6",
-    "discord.js": "13.7.0",
-    "json5": "2.2.1",
+    "bufferutil": "4.0.7",
+    "discord.js": "14.7.1",
+    "json5": "2.2.2",
     "sodium": "3.0.2",
-    "utf-8-validate": "5.0.9",
+    "utf-8-validate": "5.0.10",
     "zlib-sync": "0.1.7"
   },
   "keywords": [

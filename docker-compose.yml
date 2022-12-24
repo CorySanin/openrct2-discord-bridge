@@ -12,7 +12,7 @@ services:
          - ./config/openrct2/plugin.store.json:/home/openrct2/.config/OpenRCT2/plugin.store.json
          - ./config/openrct2/config.ini:/home/openrct2/.config/OpenRCT2/config.ini
       depends_on:
-         - discord-bridge
+         - openrct2-discord-bridge
       command:
          - "host"
          - "https://bit.do/openrct2-bpb"
