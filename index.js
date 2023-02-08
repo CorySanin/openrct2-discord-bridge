@@ -3,6 +3,7 @@ if (typeof (registerPlugin) === "undefined") {
     const JSON5 = require('json5');
     const Server = require('net').Server;
     const Discord = require('discord.js');
+    const emoji = require('./emoji');
     const server = new Server();
     const client = new Discord.Client({
         intents: [Discord.IntentsBitField.Flags.Guilds, Discord.IntentsBitField.Flags.MessageContent, Discord.IntentsBitField.Flags.GuildMessages]
@@ -89,7 +90,7 @@ if (typeof (registerPlugin) === "undefined") {
                         type: 'chat',
                         body: {
                             author: msg.author.username,
-                            content: msg.content
+                            content: emoji.emojiToText(msg.content)
                         }
                     };
                     for (let conId in connections) {
