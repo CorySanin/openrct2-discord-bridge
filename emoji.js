@@ -1,4 +1,4 @@
-const emoji = require('node-emoji');
+const EmojiConvertor = require('emoji-js');
 
 const ANGEL = '0:)';
 const ANGRY = '>:(';
@@ -32,6 +32,8 @@ const STRAIGHT_FACE = ':|';
 const SUNGLASSES = 'B)';
 const SURPRISED = ':O';
 const THINKING = 'hmm';
+const THUMBSDOWN = '(n)';
+const THUMBSUP = '(y)';
 const TONGUE = ':P';
 const TONGUE_WINK = ';P';
 const UNAMUSED = '-_-';
@@ -44,22 +46,24 @@ const WINK = ';)';
 const emoticonLookup = {
     '‼️': `${EXCLAMATION}${EXCLAMATION}`,
     '⁉️': `${EXCLAMATION}${QUESTION}`,
-    '☠': DEAD,
     '☹️': FROWN,
     '☺️': SMILING_EYES,
     '♥️': HEART,
+    '❤️‍🔥': HEART,
+    '➡️': RIGHT,
+    '⬅️': LEFT,
+    '❤️': HEART,
+    '☠': DEAD,
     '❓': QUESTION,
     '❔': QUESTION,
     '❕': EXCLAMATION,
     '❗': EXCLAMATION,
-    '❤️': HEART,
-    '❤️‍🔥': HEART,
-    '➡️': RIGHT,
-    '⬅️': LEFT,
     '🌹': ROSE,
     '🐓': CHICKEN,
     '🐔': CHICKEN,
     '👋': WAVE,
+    '👍': THUMBSUP,
+    '👎': THUMBSDOWN,
     '👿': ANGRY,
     '💀': DEAD,
     '💓': HEART,
@@ -75,6 +79,7 @@ const emoticonLookup = {
     '💟': HEART,
     '💢': ANGRY,
     '💤': SLEEPING,
+    '🖖': SALUTE,
     '🖤': HEART,
     '😀': GRIN,
     '😁': SMILING_EYES,
@@ -153,11 +158,20 @@ const emoticonLookup = {
     '🫤': UNSURE
 }
 
+const emoji = new EmojiConvertor();
+emoji.colons_mode = true;
+const re = new RegExp(Object.keys(emoticonLookup).join('|'), 'g');
+
 function emojiToText(str) {
-    return emoji.replace(str, (emoji) => emoticonLookup[emoji.emoji] || `:${emoji.key}:`);
+    try {
+        return emoji.replace_unified(str.replace(re, emoji => emoticonLookup[emoji]));
+    }
+    catch (ex) {
+        console.error(`ERROR: Problem stripping emoji from "${str}"`, ex);
+    }
 }
 
 module.exports = {
     emojiToText,
-    textToEmoji: emoji.emojify
+    textToEmoji: emoji.replace_colons
 }
