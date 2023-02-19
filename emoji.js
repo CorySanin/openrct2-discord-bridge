@@ -155,7 +155,12 @@ const emoticonLookup = {
     '🫀': HEART,
     '🫠': UPSIDE_DOWN_SMILE,
     '🫡': SALUTE,
-    '🫤': UNSURE
+    '🫤': UNSURE,
+    '🏻': '',
+    '🏼': '',
+    '🏽': '',
+    '🏾': '',
+    '🏿': ''
 }
 
 const emoji = new EmojiConvertor();
