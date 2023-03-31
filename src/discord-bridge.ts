@@ -127,7 +127,7 @@ function doNothing() {
 
 registerPlugin({
     name: 'discord-bridge',
-    version: '2.1.1',
+    version: '2.2.2',
     authors: ['Cory Sanin'],
     type: 'remote',
     licence: 'MIT',
