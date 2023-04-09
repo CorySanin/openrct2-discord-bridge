@@ -90,7 +90,7 @@ if (typeof (registerPlugin) === "undefined") {
                         type: 'chat',
                         body: {
                             author: msg.author.username,
-                            content: emoji.emojiToText(msg.content)
+                            content: msg.stickers.size ? `sent a sticker- "${msg.stickers.first().name}"` : emoji.emojiToText(msg.content)
                         }
                     };
                     for (let conId in connections) {
