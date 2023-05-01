@@ -21,7 +21,7 @@
     "zlib-sync": "0.1.8"
   },
   "devDependencies": {
-    "typescript": "5.0.3"
+    "typescript": "5.0.4"
   },
   "keywords": [
     "openrct2",
