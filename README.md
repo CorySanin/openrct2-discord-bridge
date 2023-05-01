@@ -1,4 +1,9 @@
 # openrct2-discord-bridge
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/CorySanin/openrct2-discord-bridge/docker-image.yml)](https://github.com/CorySanin/openrct2-discord-bridge/actions)
+[![Depfu](https://img.shields.io/depfu/dependencies/github/CorySanin/openrct2-discord-bridge)](/package.json)
+[![Docker Pulls](https://img.shields.io/docker/pulls/corysanin/openrct2-discord-bridge)](https://hub.docker.com/r/corysanin/openrct2-discord-bridge)
+[![GitHub](https://img.shields.io/github/license/CorySanin/openrct2-discord-bridge)](/LICENSE)
+[![Discord](https://img.shields.io/discord/225989349949308928?label=Discord)](https://ffa-tycoon.com/discord)
 
 A plugin and Node app for OpenRCT2. Sends in-game chat to Discord and vice versa. Also sends alerts to Discord about various in-game events, such as the park rating dropping below a threshold for example.
 
