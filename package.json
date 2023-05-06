@@ -1,6 +1,6 @@
 {
   "name": "openrct2-discord-bridge",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "OpenRCT2 to Discord communication",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "bufferutil": "4.0.7",
-    "discord.js": "14.10.2",
+    "discord.js": "14.11.0",
     "emoji-js": "3.7.0",
     "json5": "2.2.3",
     "sodium": "3.0.2",
