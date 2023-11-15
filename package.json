@@ -1,6 +1,6 @@
 {
   "name": "openrct2-discord-bridge",
-  "version": "2.2.6",
+  "version": "2.2.7",
   "description": "OpenRCT2 to Discord communication",
   "main": "index.js",
   "scripts": {
@@ -12,16 +12,16 @@
     "url": "git+https://github.com/CorySanin/openrct2-discord-bridge.git"
   },
   "dependencies": {
-    "bufferutil": "4.0.7",
-    "discord.js": "14.13.0",
-    "emoji-js": "3.7.0",
+    "bufferutil": "4.0.8",
+    "discord.js": "14.14.1",
+    "emoji-js": "3.8.0",
     "json5": "2.2.3",
     "sodium": "3.0.2",
     "utf-8-validate": "6.0.3",
-    "zlib-sync": "0.1.8"
+    "zlib-sync": "0.1.9"
   },
   "devDependencies": {
-    "typescript": "5.1.6"
+    "typescript": "5.2.2"
   },
   "keywords": [
     "openrct2",
