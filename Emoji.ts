@@ -1,4 +1,4 @@
-const EmojiConvertor = require('emoji-js');
+import EmojiConvertor from 'emoji-js';
 
 const ANGEL = '0:)';
 const ANGRY = '>:(';
@@ -167,16 +167,20 @@ const emoji = new EmojiConvertor();
 emoji.colons_mode = true;
 const re = new RegExp(Object.keys(emoticonLookup).join('|'), 'g');
 
-function emojiToText(str) {
-    try {
-        return emoji.replace_unified(str.replace(re, emoji => emoticonLookup[emoji]));
+export class Emoji {
+    emojiToText(str: string): string {
+        try {
+            return emoji.replace_unified(str.replace(re, emoji => emoticonLookup[emoji]));
+        }
+        catch (ex) {
+            console.error(`ERROR: Problem stripping emoji from "${str}"`, ex);
+            return str;
+        }
     }
-    catch (ex) {
-        console.error(`ERROR: Problem stripping emoji from "${str}"`, ex);
+
+    textToEmoji(str: string): string {
+        return emoji.replace_colons(str);
     }
 }
 
-module.exports = {
-    emojiToText,
-    textToEmoji: emoji.replace_colons
-}
+export default Emoji;
