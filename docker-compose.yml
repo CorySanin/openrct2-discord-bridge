@@ -11,8 +11,6 @@ services:
          - ./lib:/home/openrct2/.config/OpenRCT2/plugin/bridge:ro
          - ./config/openrct2/plugin.store.json:/home/openrct2/.config/OpenRCT2/plugin.store.json
          - ./config/openrct2/config.ini:/home/openrct2/.config/OpenRCT2/config.ini
-      depends_on:
-         - openrct2-discord-bridge
       command:
          - "host"
          - "https://ffa-tycoon.com/parks/sandbox"

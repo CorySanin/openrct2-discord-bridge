@@ -1,6 +1,9 @@
 # openrct2-discord-bridge
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/CorySanin/openrct2-discord-bridge/docker-image.yml)](https://github.com/CorySanin/openrct2-discord-bridge/actions)
-[![Depfu](https://img.shields.io/depfu/dependencies/github/CorySanin/openrct2-discord-bridge)](/package.json)
+[![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CorySanin/openrct2-discord-bridge)](https://github.com/CorySanin/openrct2-discord-bridge)
+[![GitHub Release](https://img.shields.io/github/v/release/CorySanin/openrct2-discord-bridge)](https://github.com/CorySanin/openrct2-discord-bridge/releases/latest)
+[![GitHub Release Date](https://img.shields.io/github/release-date-pre/CorySanin/openrct2-discord-bridge)](https://github.com/CorySanin/openrct2-discord-bridge/releases/latest)
+[![GitHub Repo stars](https://img.shields.io/github/stars/CorySanin/openrct2-discord-bridge?style=flat)](https://github.com/CorySanin/openrct2-discord-bridge)
 [![Docker Pulls](https://img.shields.io/docker/pulls/corysanin/openrct2-discord-bridge)](https://hub.docker.com/r/corysanin/openrct2-discord-bridge)
 [![GitHub](https://img.shields.io/github/license/CorySanin/openrct2-discord-bridge)](/LICENSE)
 [![Discord](https://img.shields.io/discord/225989349949308928?label=Discord)](https://ffa-tycoon.com/discord)
