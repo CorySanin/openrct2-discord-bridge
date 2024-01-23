@@ -10,6 +10,9 @@ RUN bun install --production --no-progress
 
 FROM oven/bun:alpine as deploy
 WORKDIR /usr/src/openrct2-discord
+HEALTHCHECK  --timeout=3s \
+  CMD curl --fail http://localhost:3000 || exit 1
+RUN apk add --no-cache curl
 COPY --from=build-env /build .
 COPY . .
 USER bun

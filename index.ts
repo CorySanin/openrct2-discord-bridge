@@ -1,4 +1,10 @@
 import { Server, Socket } from "net";
+import fs from 'fs';
+import JSON5 from 'json5';
+import Net from 'net';
+import Discord, { ThreadChannel } from 'discord.js';
+import Emoji from './Emoji';
+const Bun = require('bun');
 
 type PluginPayload = HandhsakePayload | ChatPayload | MessagePayload | ConnectPayload;
 
@@ -63,11 +69,7 @@ interface ConnectBody {
     type: 'leave' | 'join'
 }
 
-import fs from 'fs';
-import JSON5 from 'json5';
-import Net from 'net';
-import Discord, { ThreadChannel } from 'discord.js';
-import Emoji from './Emoji';
+const UNHEALTHY_THRESHOLD = 5;
 const emoji = new Emoji();
 const server: Server = new Net.Server();
 const client = new Discord.Client({
@@ -82,8 +84,13 @@ fs.readFile('config/config.json5', (err, data) => {
     else {
         let config: ORCT2DiscordConfig = JSON5.parse(data.toString());
         let connections: ConnectionsMap = {};
+        let healthFactor = UNHEALTHY_THRESHOLD;
 
         config.port = config.port || 35711;
+
+        function healthyAction(healthy: boolean = true): void {
+            healthFactor = healthy ? Math.max(0, healthFactor - 1) : Math.min(UNHEALTHY_THRESHOLD << 1, healthFactor + 2);
+        }
 
         async function sendChatToDiscord(msg: string, options: DiscordChatOptions = {}) {
             ((await client.guilds.fetch(options.guild || config.guild)).channels.resolve(options.channel || config.channel) as ThreadChannel).send(msg);
@@ -129,9 +136,11 @@ fs.readFile('config/config.json5', (err, data) => {
                     else if (conobj.connectionMessages && msg.type === 'connect') {
                         sendChatToDiscord(`*(${servername})*\n${Discord.escapeMarkdown(msg.body.player)} has ${msg.body.type == 'leave' ? 'left' : 'joined'}.`, conobj);
                     }
+                    healthyAction();
                 }
                 catch (ex) {
                     console.log(`Error parsing json: ${ex}\nInput json: ${data.toString()}`);
+                    healthyAction(false);
                 }
             });
             socket.on('close', _ => {
@@ -165,6 +174,12 @@ fs.readFile('config/config.json5', (err, data) => {
 
         client.on('ready', () => {
             console.log(`Bot logged in as ${client.user?.username}`);
+            healthFactor = 0;
+        });
+
+        client.on('error', err => {
+            console.error('error', err);
+            healthyAction(false);
         });
 
         client.login(config.botToken);
@@ -173,9 +188,19 @@ fs.readFile('config/config.json5', (err, data) => {
             console.log(`Discord Bridge server listening on ${config.port}`);
         });
 
+        const healthcheckServer = Bun.serve({
+            fetch() {
+                const healthy = healthFactor < UNHEALTHY_THRESHOLD;
+                return healthy ? new Response('Healthy \u{1F642}') : new Response('Unhealthy \u{1F641}', {
+                    status: 500
+                });
+            }
+        });
+
         process.on('SIGTERM', () => {
             client.destroy();
             server.close();
+            healthcheckServer.stop();
         });
     }
 });
