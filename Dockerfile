@@ -2,7 +2,7 @@ FROM oven/bun:alpine AS build-env
 
 WORKDIR /build
 
-RUN apk add --no-cache make libtool autoconf automake g++ python3 || echo 'ignoring error'
+RUN apk add --no-cache make libtool autoconf automake g++ python3
 
 COPY ./package*json ./
 COPY ./bun.lockb ./
