@@ -1,4 +1,5 @@
-FROM oven/bun:alpine AS build-env
+FROM oven/bun:alpine AS base
+FROM base AS build-env
 
 WORKDIR /build
 
@@ -8,7 +9,7 @@ COPY ./package*json ./
 COPY ./bun.lockb ./
 RUN bun install --production --no-progress
 
-FROM oven/bun:alpine as deploy
+FROM base as deploy
 WORKDIR /usr/src/openrct2-discord
 HEALTHCHECK  --timeout=3s \
   CMD curl --fail http://localhost:3000 || exit 1
