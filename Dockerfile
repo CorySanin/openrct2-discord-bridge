@@ -1,9 +1,11 @@
-FROM oven/bun:alpine AS base
+FROM oven/bun:debian AS base
 FROM base AS build-env
 
 WORKDIR /build
 
-RUN apk add --no-cache make libtool autoconf automake g++ python3 py3-distutils-extra || echo 'ignoring error'
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends make libtool autoconf automake g++ python3 python3-distutils-extra \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY ./package*json ./
 COPY ./bun.lockb ./
@@ -13,7 +15,9 @@ FROM base AS deploy
 WORKDIR /usr/src/openrct2-discord
 HEALTHCHECK  --timeout=3s \
   CMD curl --fail http://localhost:3000 || exit 1
-RUN apk add --no-cache curl
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build-env /build .
 COPY . .
 USER bun
