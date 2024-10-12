@@ -18,7 +18,8 @@
     "emoji-js": "git+https://github.com/iamcal/js-emoji.git#6b99ad1",
     "json5": "2.2.3",
     "sodium": "3.0.2",
-    "utf-8-validate": "6.0.4"
+    "utf-8-validate": "6.0.4",
+    "zlib-sync": "0.1.9"
   },
   "devDependencies": {
     "@types/bun": "latest",
