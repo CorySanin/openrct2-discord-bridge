@@ -2,7 +2,8 @@ import { Server, Socket } from "net";
 import fs from 'fs';
 import JSON5 from 'json5';
 import Net from 'net';
-import Discord, { ThreadChannel } from 'discord.js';
+import { Client, GatewayIntentBits, ThreadChannel } from 'discord.js';
+import { escapeMarkdown } from '@discordjs/formatters';
 import Emoji from './Emoji';
 const Bun = require('bun');
 
@@ -72,8 +73,8 @@ interface ConnectBody {
 const UNHEALTHY_THRESHOLD = 5;
 const emoji = new Emoji();
 const server: Server = new Net.Server();
-const client = new Discord.Client({
-    intents: [Discord.IntentsBitField.Flags.Guilds, Discord.IntentsBitField.Flags.MessageContent, Discord.IntentsBitField.Flags.GuildMessages]
+const client = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages]
 });
 let clients = 0;
 
@@ -127,14 +128,14 @@ fs.readFile('config/config.json5', (err, data) => {
                         conobj.connectionMessages = msg.body.connectionMessages || config.connectionMessages;
                     }
                     else if (msg.type === 'chat') {
-                        sendChatToDiscord(`**${Discord.escapeMarkdown(msg.body.author)}** *(${servername})*\n${msg.body.content}`, conobj);
+                        sendChatToDiscord(`**${escapeMarkdown(msg.body.author)}** *(${servername})*\n${msg.body.content}`, conobj);
                         sendChatToOtherServers(msg, conobj);
                     }
                     else if (msg.type === 'message') {
                         sendChatToDiscord(`*(${servername})*\n${msg.body}`, conobj);
                     }
                     else if (conobj.connectionMessages && msg.type === 'connect') {
-                        sendChatToDiscord(`*(${servername})*\n${Discord.escapeMarkdown(msg.body.player)} has ${msg.body.type == 'leave' ? 'left' : 'joined'}.`, conobj);
+                        sendChatToDiscord(`*(${servername})*\n${escapeMarkdown(msg.body.player)} has ${msg.body.type == 'leave' ? 'left' : 'joined'}.`, conobj);
                     }
                     healthyAction();
                 }
