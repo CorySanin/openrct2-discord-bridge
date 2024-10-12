@@ -3,13 +3,13 @@ FROM base AS build-env
 
 WORKDIR /build
 
-RUN apk add --no-cache make libtool autoconf automake g++ python3
+RUN apk add --no-cache make libtool autoconf automake g++ python3 py3-distutils-extra
 
 COPY ./package*json ./
 COPY ./bun.lockb ./
 RUN bun install --production --no-progress
 
-FROM base as deploy
+FROM base AS deploy
 WORKDIR /usr/src/openrct2-discord
 HEALTHCHECK  --timeout=3s \
   CMD curl --fail http://localhost:3000 || exit 1
