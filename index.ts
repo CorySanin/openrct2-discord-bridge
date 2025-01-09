@@ -1,11 +1,11 @@
 import { Server, Socket } from "net";
+import http from "http"
 import fs from 'fs';
 import JSON5 from 'json5';
 import Net from 'net';
 import { Client, GatewayIntentBits, ThreadChannel } from 'discord.js';
 import { escapeMarkdown } from '@discordjs/formatters';
-import Emoji from './Emoji';
-const Bun = require('bun');
+import Emoji from './Emoji.ts';
 
 type PluginPayload = HandhsakePayload | ChatPayload | MessagePayload | ConnectPayload;
 
@@ -189,19 +189,26 @@ fs.readFile('config/config.json5', (err, data) => {
             console.log(`Discord Bridge server listening on ${config.port}`);
         });
 
-        const healthcheckServer = Bun.serve({
-            fetch() {
-                const healthy = healthFactor < UNHEALTHY_THRESHOLD;
-                return healthy ? new Response('Healthy \u{1F642}') : new Response('Unhealthy \u{1F641}', {
-                    status: 500
-                });
+        const healthcheck = http.createServer((req, res) => {
+            const healthy = healthFactor < UNHEALTHY_THRESHOLD;
+            const contentType = { 'Content-Type': 'text/plain; charset=utf-8' };
+            if (healthy) {
+                res.writeHead(200, contentType);
+                res.end('Healthy \u{1F642}');
             }
+            else {
+                res.writeHead(500, contentType);
+                res.end('Unhealthy \u{1F641}');
+            }
+        });
+        const healthcheckServer = healthcheck.listen(process.env.PORT || 3000, () => {
+            console.log(`Healthcheck running on port ${process.env.PORT || 3000}`);
         });
 
         process.on('SIGTERM', () => {
             client.destroy();
             server.close();
-            healthcheckServer.stop();
+            healthcheckServer.close();
         });
     }
 });

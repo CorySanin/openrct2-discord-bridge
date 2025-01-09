@@ -1,26 +1,21 @@
-FROM oven/bun:debian AS base
+FROM node:23-alpine AS base
 FROM base AS build-env
 
 WORKDIR /build
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends make libtool autoconf automake g++ python3 python3-distutils-extra \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache make libtool autoconf automake g++ python3
 
 COPY ./package*json ./
-COPY ./bun.lockb ./
-RUN bun install --production --no-progress
+RUN npm ci --only=production
 
 FROM base AS deploy
 WORKDIR /usr/src/openrct2-discord
 HEALTHCHECK  --timeout=3s \
-  CMD curl --fail http://localhost:3000 || exit 1
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
+  CMD curl --fail http://localhost:3000/health || exit 1
+RUN apk add --no-cache curl
 COPY --from=build-env /build .
 COPY . .
-USER bun
+USER node
 
 EXPOSE 35711
-CMD [ "bun", "run", "index.ts"]
+CMD [ "node", "index.ts"]
