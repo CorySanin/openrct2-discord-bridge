@@ -1,5 +1,5 @@
 FROM node:23-alpine AS base
-FROM base AS build-env
+FROM node:18-alpine AS build-env
 
 WORKDIR /build
 
