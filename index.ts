@@ -3,8 +3,7 @@ import http from "http"
 import fs from 'fs';
 import JSON5 from 'json5';
 import Net from 'net';
-import { Client, GatewayIntentBits, ThreadChannel } from 'discord.js';
-import { escapeMarkdown } from '@discordjs/formatters';
+import { Client, GatewayIntentBits, ThreadChannel, escapeMarkdown } from 'discord.js';
 import Emoji from './Emoji.ts';
 
 type PluginPayload = HandhsakePayload | ChatPayload | MessagePayload | ConnectPayload;
@@ -173,7 +172,7 @@ fs.readFile('config/config.json5', (err, data) => {
             }
         });
 
-        client.on('ready', () => {
+        client.on('clientReady', () => {
             console.log(`Bot logged in as ${client.user?.username}`);
             healthFactor = 0;
         });
