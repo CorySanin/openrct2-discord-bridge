@@ -1,7 +1,7 @@
 {
   "name": "openrct2-discord-bridge",
   "type": "module",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "description": "OpenRCT2 to Discord communication",
   "main": "index.ts",
   "scripts": {
