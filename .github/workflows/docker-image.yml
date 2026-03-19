@@ -15,6 +15,7 @@ env:
   GH_REGISTRY: ghcr.io
   DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
   TAG: _sha-${{ github.sha }}
+  ARTIFACT_SUFFIX: -ci-artifacts
 
 jobs:
   lowercasify:
@@ -74,7 +75,7 @@ jobs:
         with:
           target: deploy
           push: true
-          tags: ${{ env.GH_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}-${{ matrix.arch }}
+          tags: ${{ env.GH_REGISTRY }}/${{ env.IMAGE_NAME }}${{ env.ARTIFACT_SUFFIX }}:${{ env.TAG }}-${{ matrix.arch }}
           cache-from: type=gha,scope=${{ github.workflow }}
           cache-to: type=gha,mode=max,scope=${{ github.workflow }}
   
@@ -150,5 +151,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           index-annotations: ${{ steps.meta.outputs.labels }}
           sources: |
-            ${{ env.GH_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}-x86
-            ${{ env.GH_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}-ARM
+            ${{ env.GH_REGISTRY }}/${{ env.IMAGE_NAME }}${{ env.ARTIFACT_SUFFIX }}:${{ env.TAG }}-x86
+            ${{ env.GH_REGISTRY }}/${{ env.IMAGE_NAME }}${{ env.ARTIFACT_SUFFIX }}:${{ env.TAG }}-ARM
