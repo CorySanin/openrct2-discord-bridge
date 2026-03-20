@@ -24,7 +24,7 @@
   "scripts": {
     "build": "npx tsc",
     "build-all": "npx tsc -p tsconfig.plugin.json && npx tsc",
-    "sea": "npm run build && ncc build --source-map --license licenses.txt --no-source-map-register && node --build-sea sea-config.json",
+    "sea": "npm run build && npm install @vercel/ncc && ncc build --source-map --license licenses.txt --no-source-map-register && npm uninstall @vercel/ncc && node --build-sea sea-config.json",
     "gettypes": "curl https://raw.githubusercontent.com/OpenRCT2/OpenRCT2/develop/distribution/openrct2.d.ts > types/openrct2.d.ts"
   },
   "dependencies": {
@@ -37,7 +37,6 @@
   "devDependencies": {
     "@sindresorhus/tsconfig": "8.1.0",
     "@types/emoji-js": "^3.5.2",
-    "@vercel/ncc": "0.38.4",
     "typescript": "^5.9.3"
   }
 }
