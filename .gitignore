@@ -105,3 +105,4 @@ dist
 
 # Custom
 config/config.json5
+distribution/

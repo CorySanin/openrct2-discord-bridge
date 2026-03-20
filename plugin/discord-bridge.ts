@@ -4,30 +4,37 @@ const MINRATING = 400;
 const NEWLINE = new RegExp('\n', 'g');
 const PREFIX = new RegExp('^(!|/)');
 
+interface HandshakeBody {
+    name?: string;
+    guild?: string;
+    channel?: string;
+    connectionMessages?: string;
+}
+
 function main() {
-    let onlineOnly = context.sharedStorage.get('discord-bridge.onlineonly', true);
+    const onlineOnly = context.sharedStorage.get<boolean>('discord-bridge.onlineonly', true);
     if (!onlineOnly || network.mode === 'server') {
-        let socket = network.createSocket();
-        let name = context.sharedStorage.get('discord-bridge.name', null);
-        let guild = context.sharedStorage.get('discord-bridge.guild', null);
-        let channel = context.sharedStorage.get('discord-bridge.channel', null);
-        let port = context.sharedStorage.get('discord-bridge.port', 35711);
-        let host = context.sharedStorage.get('discord-bridge.host', '127.0.0.1');
-        let connectionMessages = context.sharedStorage.get('discord-bridge.connectionMessages', false);
-        let showChatCommands = context.sharedStorage.get('discord-bridge.showChatCommands', false);
-        let status = {
+        const socket = network.createSocket();
+        const name = context.sharedStorage.get<string | null>('discord-bridge.name', null);
+        const guild = context.sharedStorage.get<string | null>('discord-bridge.guild', null);
+        const channel = context.sharedStorage.get<string | null>('discord-bridge.channel', null);
+        const port = context.sharedStorage.get<number>('discord-bridge.port', 35711);
+        const host = context.sharedStorage.get<string>('discord-bridge.host', '127.0.0.1');
+        const connectionMessages = context.sharedStorage.get('discord-bridge.connectionMessages', false);
+        const showChatCommands = context.sharedStorage.get('discord-bridge.showChatCommands', false);
+        const status = {
             parkRating: false
         }
         let reconnect = false;
-        let connect = () => {
+        const connect = () => {
             console.log(`Attempting to connect to ${host}:${port}`);
             socket.connect(port, host, doNothing);
         };
-        let leavejoin = (type, player) => {
+        const leavejoin = (type: string, player: number) => {
             socket.write(JSON.stringify({
                 type: 'connect',
                 body: {
-                    player: getPlayer(player).name,
+                    player: getPlayer(player)?.name,
                     type
                 }
             }));
@@ -36,12 +43,12 @@ function main() {
         socket.on('close', _ => reconnect = true);
         socket.on('error', _ => reconnect = true);
         socket.on('data', (data) => {
-            let msg = JSON.parse(data);
+            const msg = JSON.parse(data);
             if (msg.type === 'handshake') {
                 console.log('Connected.');
                 reconnect = false;
                 if (name || guild || channel || connectionMessages) {
-                    let body = {};
+                    const body: HandshakeBody = {};
                     if (name) {
                         body['name'] = name;
                     }
@@ -71,7 +78,7 @@ function main() {
                 connect();
             }
 
-            let ratingCheck = park.rating > MINRATING;
+            const ratingCheck = park.rating > MINRATING;
             if (status.parkRating && !ratingCheck) {
                 socket.write(JSON.stringify({
                     type: 'message',
@@ -95,7 +102,7 @@ function main() {
                     socket.write(JSON.stringify({
                         type: 'chat',
                         body: {
-                            author: getPlayer(e.player).name,
+                            author: getPlayer(e.player)?.name,
                             content: e.message
                         }
                     }));
@@ -107,12 +114,12 @@ function main() {
     }
 }
 
-function getPlayer(playerID: number): Player {
+function getPlayer(playerID: number): Player | null {
+    let player: Player | null = null;
     if (playerID === -1) {
-        return null;
+        return player;
     }
-    var player: Player = null;
-    var players = network.players;
+    const players = network.players;
     for (const p of players) {
         if (p.id === playerID) {
             player = p;
@@ -127,11 +134,11 @@ function doNothing() {
 
 registerPlugin({
     name: 'discord-bridge',
-    version: '2.2.2',
+    version: '2.2.3',
     authors: ['Cory Sanin'],
     type: 'remote',
     licence: 'MIT',
     minApiVersion: 24,
-    targetApiVersion: 65,
+    targetApiVersion: 110,
     main
 });

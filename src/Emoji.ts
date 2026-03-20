@@ -43,7 +43,7 @@ const WAVE = 'o/';
 const WEARY = 'DX';
 const WINK = ';)';
 
-const emoticonLookup = {
+const emoticonLookup: Record<string, string> = {
     '‼️': `${EXCLAMATION}${EXCLAMATION}`,
     '⁉️': `${EXCLAMATION}${QUESTION}`,
     '☹️': FROWN,
@@ -170,7 +170,7 @@ const re = new RegExp(Object.keys(emoticonLookup).join('|'), 'g');
 export class Emoji {
     emojiToText(str: string): string {
         try {
-            return emoji.replace_unified(str.replace(re, emoji => emoticonLookup[emoji]));
+            return emoji.replace_unified(str.replace(re, emoji => emoticonLookup[emoji] || emoji));
         }
         catch (ex) {
             console.error(`ERROR: Problem stripping emoji from "${str}"`, ex);

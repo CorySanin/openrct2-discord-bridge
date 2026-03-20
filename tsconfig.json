@@ -1,12 +1,12 @@
 {
-    "compilerOptions": {
-        "lib": ["es5"],
-        "target": "ES5",
-        "module": "CommonJS",
-        "moduleResolution": "Node",
-        "typeRoots": ["types"],
-        "removeComments": true,
-        "outDir": "lib"
-    },
-    "files": ["src/discord-bridge.ts"]
+  "extends": "@sindresorhus/tsconfig",
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "rootDir": "./src"
+  },
+  "include": [
+    "src"
+  ]
 }

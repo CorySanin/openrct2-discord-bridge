@@ -4,7 +4,7 @@ import fs from 'fs';
 import JSON5 from 'json5';
 import Net from 'net';
 import { Client, GatewayIntentBits, ThreadChannel, escapeMarkdown } from 'discord.js';
-import Emoji from './Emoji.ts';
+import Emoji from './Emoji.js';
 
 type PluginPayload = HandhsakePayload | ChatPayload | MessagePayload | ConnectPayload;
 
@@ -82,8 +82,8 @@ fs.readFile('config/config.json5', (err, data) => {
         console.log(err);
     }
     else {
-        let config: ORCT2DiscordConfig = JSON5.parse(data.toString());
-        let connections: ConnectionsMap = {};
+        const config: ORCT2DiscordConfig = JSON5.parse(data.toString());
+        const connections: ConnectionsMap = {};
         let healthFactor = UNHEALTHY_THRESHOLD;
 
         config.port = config.port || 35711;
@@ -99,7 +99,7 @@ fs.readFile('config/config.json5', (err, data) => {
         function sendChatToOtherServers(msg: PluginPayload, originServer: ConnectionObject) {
             let message = JSON.stringify(msg);
             for (let conId in connections) {
-                if (connections[conId] !== originServer && connections[conId].channel === originServer.channel) {
+                if (connections[conId] !== originServer && connections[conId]?.channel === originServer.channel) {
                     connections[conId].socket.write(message);
                 }
             }
@@ -165,7 +165,7 @@ fs.readFile('config/config.json5', (err, data) => {
                     }
                 };
                 for (let conId in connections) {
-                    if (connections[conId].channel === msg.channel.id) {
+                    if (connections[conId]?.channel === msg.channel.id) {
                         connections[conId].socket.write(JSON.stringify(message));
                     }
                 }
@@ -188,7 +188,7 @@ fs.readFile('config/config.json5', (err, data) => {
             console.log(`Discord Bridge server listening on ${config.port}`);
         });
 
-        const healthcheck = http.createServer((req, res) => {
+        const healthcheck = http.createServer((_, res) => {
             const healthy = healthFactor < UNHEALTHY_THRESHOLD;
             const contentType = { 'Content-Type': 'text/plain; charset=utf-8' };
             if (healthy) {
@@ -200,8 +200,8 @@ fs.readFile('config/config.json5', (err, data) => {
                 res.end('Unhealthy \u{1F641}');
             }
         });
-        const healthcheckServer = healthcheck.listen(process.env.PORT || 3000, () => {
-            console.log(`Healthcheck running on port ${process.env.PORT || 3000}`);
+        const healthcheckServer = healthcheck.listen(process.env['PORT'] || 3000, () => {
+            console.log(`Healthcheck running on port ${process.env['PORT'] || 3000}`);
         });
 
         process.on('SIGTERM', () => {

@@ -1,16 +1,30 @@
 {
   "name": "openrct2-discord-bridge",
-  "type": "module",
-  "version": "2.4.3",
+  "version": "2.5.0",
   "description": "OpenRCT2 to Discord communication",
-  "main": "index.ts",
-  "scripts": {
-    "build": "tsc",
-    "gettypes": "curl https://raw.githubusercontent.com/OpenRCT2/OpenRCT2/develop/distribution/openrct2.d.ts > types/openrct2.d.ts"
+  "keywords": [
+    "openrct2",
+    "plugin",
+    "discord",
+    "bot",
+    "relay"
+  ],
+  "homepage": "https://github.com/CorySanin/openrct2-discord-bridge#readme",
+  "bugs": {
+    "url": "https://github.com/CorySanin/openrct2-discord-bridge/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CorySanin/openrct2-discord-bridge.git"
+  },
+  "license": "MIT",
+  "author": "Cory Sanin",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "npx tsc",
+    "build-all": "npx tsc -p tsconfig.plugin.json && npx tsc",
+    "gettypes": "curl https://raw.githubusercontent.com/OpenRCT2/OpenRCT2/develop/distribution/openrct2.d.ts > types/openrct2.d.ts"
   },
   "dependencies": {
     "bufferutil": "4.1.0",
@@ -20,22 +34,8 @@
     "utf-8-validate": "6.0.6"
   },
   "devDependencies": {
-    "@types/emoji-js": "^3.5.2"
-  },
-  "peerDependencies": {
+    "@sindresorhus/tsconfig": "8.1.0",
+    "@types/emoji-js": "^3.5.2",
     "typescript": "^5.9.3"
-  },
-  "keywords": [
-    "openrct2",
-    "plugin",
-    "discord",
-    "bot",
-    "relay"
-  ],
-  "author": "Cory Sanin",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/CorySanin/openrct2-discord-bridge/issues"
-  },
-  "homepage": "https://github.com/CorySanin/openrct2-discord-bridge#readme"
+  }
 }
