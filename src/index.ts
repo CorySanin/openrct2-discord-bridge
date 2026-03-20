@@ -1,6 +1,6 @@
 import { Server, Socket } from "net";
 import http from "http"
-import fs from 'fs';
+import fsp from 'fs/promises';
 import JSON5 from 'json5';
 import Net from 'net';
 import { Client, GatewayIntentBits, ThreadChannel, escapeMarkdown } from 'discord.js';
@@ -77,137 +77,132 @@ const client = new Client({
 });
 let clients = 0;
 
-fs.readFile('config/config.json5', (err, data) => {
-    if (err) {
-        console.log(err);
+const data = await fsp.readFile('config/config.json5', { encoding: 'utf-8' });
+
+const config: ORCT2DiscordConfig = JSON5.parse(data);
+const connections: ConnectionsMap = {};
+let healthFactor = UNHEALTHY_THRESHOLD;
+
+config.port ||= 35711;
+
+function healthyAction(healthy: boolean = true): void {
+    healthFactor = healthy ? Math.max(0, healthFactor - 1) : Math.min(UNHEALTHY_THRESHOLD << 1, healthFactor + 2);
+}
+
+async function sendChatToDiscord(msg: string, options: DiscordChatOptions = {}) {
+    ((await client.guilds.fetch(options.guild || config.guild)).channels.resolve(options.channel || config.channel) as ThreadChannel).send(msg);
+}
+
+function sendChatToOtherServers(msg: PluginPayload, originServer: ConnectionObject) {
+    let message = JSON.stringify(msg);
+    for (let conId in connections) {
+        if (connections[conId] !== originServer && connections[conId]?.channel === originServer.channel) {
+            connections[conId].socket.write(message);
+        }
+    }
+}
+
+server.on('connection', (socket: Socket) => {
+    clients++;
+    let id = Date.now();
+    let servername = 'unknown server';
+    let conobj: ConnectionObject = connections[id] = {
+        socket,
+        channel: config.channel,
+        guild: config.guild,
+        connectionMessages: config.connectionMessages
+    };
+    socket.on('data', (data) => {
+        try {
+            let msg: PluginPayload = JSON5.parse(data.toString());
+            if (msg.type === 'handshake') {
+                if (msg.body.name) {
+                    servername = msg.body.name.replace('(', '').replace(')', '');
+                }
+                conobj.channel = msg.body.channel || config.channel;
+                conobj.guild = msg.body.guild || config.guild;
+                conobj.connectionMessages = msg.body.connectionMessages || config.connectionMessages;
+            }
+            else if (msg.type === 'chat') {
+                sendChatToDiscord(`**${escapeMarkdown(msg.body.author)}** *(${servername})*\n${msg.body.content}`, conobj);
+                sendChatToOtherServers(msg, conobj);
+            }
+            else if (msg.type === 'message') {
+                sendChatToDiscord(`*(${servername})*\n${msg.body}`, conobj);
+            }
+            else if (conobj.connectionMessages && msg.type === 'connect') {
+                sendChatToDiscord(`*(${servername})*\n${escapeMarkdown(msg.body.player)} has ${msg.body.type == 'leave' ? 'left' : 'joined'}.`, conobj);
+            }
+            healthyAction();
+        }
+        catch (ex) {
+            console.log(`Error parsing json: ${ex}\nInput json: ${data.toString()}`);
+            healthyAction(false);
+        }
+    });
+    socket.on('close', _ => {
+        clients--;
+        delete connections[id];
+    });
+    socket.write(JSON.stringify({
+        type: "handshake"
+    }));
+});
+server.on('error', (err) => {
+    console.log(err);
+});
+
+client.on('messageCreate', async msg => {
+    if (!msg.author.bot && msg.guild) {
+        let message = {
+            type: 'chat',
+            body: {
+                author: msg.author.username,
+                content: (msg.stickers.size) ? `sent a sticker- "${msg.stickers.first()?.name}"` : emoji.emojiToText(msg.cleanContent)
+            }
+        };
+        for (let conId in connections) {
+            if (connections[conId]?.channel === msg.channel.id) {
+                connections[conId].socket.write(JSON.stringify(message));
+            }
+        }
+    }
+});
+
+client.on('clientReady', () => {
+    console.log(`Bot logged in as ${client.user?.username}`);
+    healthFactor = 0;
+});
+
+client.on('error', err => {
+    console.error('error', err);
+    healthyAction(false);
+});
+
+client.login(config.botToken);
+
+server.listen(config.port, '0.0.0.0', () => {
+    console.log(`Discord Bridge server listening on ${config.port}`);
+});
+
+const healthcheck = http.createServer((_, res) => {
+    const healthy = healthFactor < UNHEALTHY_THRESHOLD;
+    const contentType = { 'Content-Type': 'text/plain; charset=utf-8' };
+    if (healthy) {
+        res.writeHead(200, contentType);
+        res.end('Healthy \u{1F642}');
     }
     else {
-        const config: ORCT2DiscordConfig = JSON5.parse(data.toString());
-        const connections: ConnectionsMap = {};
-        let healthFactor = UNHEALTHY_THRESHOLD;
-
-        config.port = config.port || 35711;
-
-        function healthyAction(healthy: boolean = true): void {
-            healthFactor = healthy ? Math.max(0, healthFactor - 1) : Math.min(UNHEALTHY_THRESHOLD << 1, healthFactor + 2);
-        }
-
-        async function sendChatToDiscord(msg: string, options: DiscordChatOptions = {}) {
-            ((await client.guilds.fetch(options.guild || config.guild)).channels.resolve(options.channel || config.channel) as ThreadChannel).send(msg);
-        }
-
-        function sendChatToOtherServers(msg: PluginPayload, originServer: ConnectionObject) {
-            let message = JSON.stringify(msg);
-            for (let conId in connections) {
-                if (connections[conId] !== originServer && connections[conId]?.channel === originServer.channel) {
-                    connections[conId].socket.write(message);
-                }
-            }
-        }
-
-        server.on('connection', (socket: Socket) => {
-            clients++;
-            let id = Date.now();
-            let servername = 'unknown server';
-            let conobj: ConnectionObject = connections[id] = {
-                socket,
-                channel: config.channel,
-                guild: config.guild,
-                connectionMessages: config.connectionMessages
-            };
-            socket.on('data', (data) => {
-                try {
-                    let msg: PluginPayload = JSON5.parse(data.toString());
-                    if (msg.type === 'handshake') {
-                        if (msg.body.name) {
-                            servername = msg.body.name.replace('(', '').replace(')', '');
-                        }
-                        conobj.channel = msg.body.channel || config.channel;
-                        conobj.guild = msg.body.guild || config.guild;
-                        conobj.connectionMessages = msg.body.connectionMessages || config.connectionMessages;
-                    }
-                    else if (msg.type === 'chat') {
-                        sendChatToDiscord(`**${escapeMarkdown(msg.body.author)}** *(${servername})*\n${msg.body.content}`, conobj);
-                        sendChatToOtherServers(msg, conobj);
-                    }
-                    else if (msg.type === 'message') {
-                        sendChatToDiscord(`*(${servername})*\n${msg.body}`, conobj);
-                    }
-                    else if (conobj.connectionMessages && msg.type === 'connect') {
-                        sendChatToDiscord(`*(${servername})*\n${escapeMarkdown(msg.body.player)} has ${msg.body.type == 'leave' ? 'left' : 'joined'}.`, conobj);
-                    }
-                    healthyAction();
-                }
-                catch (ex) {
-                    console.log(`Error parsing json: ${ex}\nInput json: ${data.toString()}`);
-                    healthyAction(false);
-                }
-            });
-            socket.on('close', _ => {
-                clients--;
-                delete connections[id];
-            });
-            socket.write(JSON.stringify({
-                type: "handshake"
-            }));
-        });
-        server.on('error', (err) => {
-            console.log(err);
-        });
-
-        client.on('messageCreate', async msg => {
-            if (!msg.author.bot && msg.guild) {
-                let message = {
-                    type: 'chat',
-                    body: {
-                        author: msg.author.username,
-                        content: (msg.stickers.size) ? `sent a sticker- "${msg.stickers.first()?.name}"` : emoji.emojiToText(msg.cleanContent)
-                    }
-                };
-                for (let conId in connections) {
-                    if (connections[conId]?.channel === msg.channel.id) {
-                        connections[conId].socket.write(JSON.stringify(message));
-                    }
-                }
-            }
-        });
-
-        client.on('clientReady', () => {
-            console.log(`Bot logged in as ${client.user?.username}`);
-            healthFactor = 0;
-        });
-
-        client.on('error', err => {
-            console.error('error', err);
-            healthyAction(false);
-        });
-
-        client.login(config.botToken);
-
-        server.listen(config.port, '0.0.0.0', () => {
-            console.log(`Discord Bridge server listening on ${config.port}`);
-        });
-
-        const healthcheck = http.createServer((_, res) => {
-            const healthy = healthFactor < UNHEALTHY_THRESHOLD;
-            const contentType = { 'Content-Type': 'text/plain; charset=utf-8' };
-            if (healthy) {
-                res.writeHead(200, contentType);
-                res.end('Healthy \u{1F642}');
-            }
-            else {
-                res.writeHead(500, contentType);
-                res.end('Unhealthy \u{1F641}');
-            }
-        });
-        const healthcheckServer = healthcheck.listen(process.env['PORT'] || 3000, () => {
-            console.log(`Healthcheck running on port ${process.env['PORT'] || 3000}`);
-        });
-
-        process.on('SIGTERM', () => {
-            client.destroy();
-            server.close();
-            healthcheckServer.close();
-        });
+        res.writeHead(500, contentType);
+        res.end('Unhealthy \u{1F641}');
     }
+});
+const healthcheckServer = healthcheck.listen(process.env['PORT'] || 3000, () => {
+    console.log(`Healthcheck running on port ${process.env['PORT'] || 3000}`);
+});
+
+process.on('SIGTERM', () => {
+    client.destroy();
+    server.close();
+    healthcheckServer.close();
 });
