@@ -5,3 +5,4 @@ docker-compose.yml
 distribution/
 lib/
 plugin/
+Dockerfile

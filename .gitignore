@@ -106,3 +106,4 @@ dist
 # Custom
 config/config.json5
 distribution/
+openrct2-discord-bridge

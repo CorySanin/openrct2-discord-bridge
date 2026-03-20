@@ -1,0 +1,5 @@
+{
+    "main": "dist/index.js",
+    "mainFormat": "module",
+    "output": "openrct2-discord-bridge"
+}

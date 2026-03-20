@@ -3,6 +3,8 @@
   "compilerOptions": {
     "exactOptionalPropertyTypes": true,
     "esModuleInterop": true,
+    "module": "NodeNext",
+    "moduleResolution": "node16",
     "sourceMap": true,
     "rootDir": "./src"
   },

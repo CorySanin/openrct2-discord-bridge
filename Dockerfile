@@ -17,7 +17,6 @@ HEALTHCHECK  --timeout=3s \
   CMD curl --fail http://localhost:3000/health || exit 1
 RUN apk add --no-cache curl zlib 
 COPY --link --from=build-env /build .
-COPY . .
 USER node
 
 EXPOSE 35711
