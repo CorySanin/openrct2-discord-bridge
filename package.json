@@ -1,6 +1,6 @@
 {
   "name": "openrct2-discord-bridge",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "OpenRCT2 to Discord communication",
   "keywords": [
     "openrct2",
@@ -22,14 +22,14 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "build": "npx tsc",
-    "build-all": "npx tsc -p tsconfig.plugin.json && npx tsc",
-    "sea": "npm run build && npm install @vercel/ncc && ncc build --source-map --license licenses.txt --no-source-map-register && npm uninstall @vercel/ncc && node --build-sea sea-config.json",
-    "gettypes": "curl https://raw.githubusercontent.com/OpenRCT2/OpenRCT2/develop/distribution/openrct2.d.ts > types/openrct2.d.ts"
+    "build": "tsc",
+    "build-all": "tsc -p tsconfig.plugin.json && tsc",
+    "gettypes": "curl https://raw.githubusercontent.com/OpenRCT2/OpenRCT2/develop/distribution/openrct2.d.ts > types/openrct2.d.ts",
+    "sea": "npm run build && npm install @vercel/ncc && ncc build --source-map --license licenses.txt --no-source-map-register && npm uninstall @vercel/ncc && node --build-sea sea-config.json"
   },
   "dependencies": {
     "bufferutil": "4.1.0",
-    "discord.js": "14.25.1",
+    "discord.js": "14.26.4",
     "emoji-js": "3.9.0",
     "json5": "2.2.3",
     "utf-8-validate": "6.0.6"
@@ -38,5 +38,6 @@
     "@sindresorhus/tsconfig": "8.1.0",
     "@types/emoji-js": "^3.5.2",
     "typescript": "^5.9.3"
-  }
+  },
+  "packageManager": "pnpm@10.33.0"
 }
