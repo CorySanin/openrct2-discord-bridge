@@ -1,6 +1,6 @@
 {
   "name": "openrct2-discord-bridge",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "OpenRCT2 to Discord communication",
   "keywords": [
     "openrct2",
@@ -39,5 +39,12 @@
     "@types/emoji-js": "^3.5.2",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.33.0"
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.16.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.16.1"
 }
