@@ -1,4 +1,4 @@
-/// <reference path="../types/openrct2.d.ts" />
+/// <reference path="../node_modules/@openrct2/types/openrct2.d.ts" />
 
 const MINRATING = 400;
 const NEWLINE = new RegExp('\n', 'g');
