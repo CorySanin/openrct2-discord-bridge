@@ -82,7 +82,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: *checkout
+        uses: actions/checkout@v7
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
