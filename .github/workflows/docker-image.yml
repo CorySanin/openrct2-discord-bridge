@@ -18,10 +18,13 @@ env:
   ARTIFACT_SUFFIX: -ci-artifacts
 
 jobs:
-  lowercasify:
+  varinit:
+    name: Define workflow variables
+    permissions: {}
     runs-on: ubuntu-24.04
     outputs:
       image_name: ${{ steps.image.outputs.image_name }}
+      image_labels: ${{ steps.labels.outputs.labels }}
       repo_name: ${{ steps.repo.outputs.repo_name }}
     steps:
       - name: Lowercase image name
@@ -32,6 +35,29 @@ jobs:
         id: repo
         run: |
           echo "repo_name=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+      - name: Define image version
+        if: "!startsWith(github.ref, 'refs/tags/v')"
+        run: echo "IMG_VERSION=develop" >> $GITHUB_ENV
+      - name: Define image version (release)
+        if: "startsWith(github.ref, 'refs/tags/v')"
+        run: echo "IMG_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+      - name: Define image labels
+        id: labels
+        run: |
+          {
+            echo "labels<<EOF"
+            echo "org.opencontainers.image.title=openrct2-discord-bridge"
+            echo "org.opencontainers.image.description=Sync chat between a Discord channel and an OpenRCT2 server"
+            echo "org.opencontainers.image.licenses=MIT"
+            echo "org.opencontainers.image.version=${{ env.IMG_VERSION }}"
+            echo "org.opencontainers.image.revision=${{ github.sha }}"
+            echo "org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%S%:z')"
+            echo "org.opencontainers.image.authors=Cory Sanin <corysanin@outlook.com>"
+            echo "org.opencontainers.image.url=https://sanin.dev/project/openrct2"
+            echo "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}"
+            echo "org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}#readme"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
   build_image:
     name: Build Docker image
@@ -47,16 +73,16 @@ jobs:
             os: ubuntu-24.04-arm
     runs-on: ${{ matrix.os }}
     needs:
-      - lowercasify
+      - varinit
     permissions:
       contents: read
       packages: write
     env:
-      IMAGE_NAME: ${{ needs.lowercasify.outputs.image_name }}
+      IMAGE_NAME: ${{ needs.varinit.outputs.image_name }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: *checkout
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -68,6 +94,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Extract metadata for Docker image
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.GH_REGISTRY }}/${{ env.IMAGE_NAME }}${{ env.ARTIFACT_SUFFIX }}
+          tags: ${{ env.TAG }}-${{ matrix.arch }}
+          labels: ${{ needs.varinit.outputs.image_labels }}
+
       - name: Build and push release Docker image
         uses: docker/build-push-action@v6
         env:
@@ -75,7 +109,9 @@ jobs:
         with:
           target: deploy
           push: true
-          tags: ${{ env.GH_REGISTRY }}/${{ env.IMAGE_NAME }}${{ env.ARTIFACT_SUFFIX }}:${{ env.TAG }}-${{ matrix.arch }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
           cache-from: type=gha,scope=${{ github.workflow }}
           cache-to: type=gha,mode=max,scope=${{ github.workflow }}
   
@@ -83,14 +119,14 @@ jobs:
     name: Combine Docker images
     runs-on: ubuntu-24.04
     needs:
-      - lowercasify
+      - varinit
       - build_image
     permissions:
       contents: read
       packages: write
     env:
-      IMAGE_NAME: ${{ needs.lowercasify.outputs.image_name }}
-      REPOSITORY: ${{ needs.lowercasify.outputs.repo_name }}
+      IMAGE_NAME: ${{ needs.varinit.outputs.image_name }}
+      REPOSITORY: ${{ needs.varinit.outputs.repo_name }}
 
     steps:
       - name: Login to GitHub Container Registry
@@ -139,17 +175,18 @@ jobs:
       
       - name: Extract metadata for Docker image
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.PIMAGES }}
           tags: ${{ env.PTAGS }}
+          labels: ${{ needs.varinit.outputs.image_labels }}
 
       - name: Combine JVM images into single manifest
         uses: int128/docker-manifest-create-action@v2
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          index-annotations: ${{ steps.meta.outputs.labels }}
+          index-annotations: ${{ steps.meta.outputs.annotations }}
           sources: |
             ${{ env.GH_REGISTRY }}/${{ env.IMAGE_NAME }}${{ env.ARTIFACT_SUFFIX }}:${{ env.TAG }}-x86
             ${{ env.GH_REGISTRY }}/${{ env.IMAGE_NAME }}${{ env.ARTIFACT_SUFFIX }}:${{ env.TAG }}-ARM
